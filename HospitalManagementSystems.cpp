@@ -39,7 +39,7 @@ public:
     virtual ~Person() {}
 
     // Virtual function untuk memfasilitasi override dan polymorphism
-    virtual void displayDetails() const {
+    virtual void tampilDetail() const {
         cout << "ID: " << id << ", Nama: " << nama;
     }
 };
@@ -62,8 +62,8 @@ public:
     void setDiagnosis(const string& diagnosis) { this->diagnosis = diagnosis; }
 
     // Fungsi override
-    void displayDetails() const override {
-        Person::displayDetails();
+    void tampilDetail() const override {
+        Person::tampilDetail();
         cout << ", Jenis Kelamin: " << (jenis_kelamin == MALE ? "Laki-laki" : "Perempuan")
              << ", Diagnosis: " << diagnosis;
     }
@@ -83,8 +83,8 @@ public:
     void setSpesialisasi(const string& spesialisasi) { this->spesialisasi = spesialisasi; }
 
     // Fungsi Override
-    void displayDetails() const override {
-        Person::displayDetails();
+    void tampilDetail() const override {
+        Person::tampilDetail();
         cout << ", Spesialisasi: " << spesialisasi;
     }
 };
@@ -103,8 +103,8 @@ public:
     void setPosisi(const string& posisi) { this->posisi = posisi; }
 
     // Fungsi Override
-    void displayDetails() const override {
-        Person::displayDetails();
+    void tampilDetail() const override {
+        Person::tampilDetail();
         cout << ", Posisi: " << posisi;
     }
 };
@@ -169,7 +169,7 @@ private:
     vector<PendaftaranJanjiTemu> daftarJanjiTemu;
 
     // Inisialisasi ruangan awal dengan 1 IGD, 3 VIP, dan 6 Reguler
-    void initializeDefaultRuangan() {
+    void RuanganAwal() {
         daftarRuangan[1] = Ruangan(1, "IGD", true, false);
         for (int i = 2; i <= 4; ++i) {
             daftarRuangan[i] = Ruangan(i, "VIP", true, true);
@@ -181,7 +181,7 @@ private:
 
 public:
     ManajemenRumahSakit() {
-        initializeDefaultRuangan(); // Inisialisasi ruangan awal
+        RuanganAwal(); // Inisialisasi ruangan awal
     }
 
     void tambahPasien(const Pasien& pasien) {
@@ -197,7 +197,7 @@ public:
     // Search pasien berdasarkan id dan polymorphism
     Pasien* cariPasien(int id) {
         if (daftarPasien.find(id) != daftarPasien.end()) {
-            daftarPasien[id].displayDetails();
+            daftarPasien[id].tampilDetail();
             return &daftarPasien[id];
         }
         else
@@ -206,8 +206,8 @@ public:
         }
     }
 
-    // Tampilkan semua pasien berdasar ID dan Objek
-    void tampilkanPasien() const {
+    // tampil semua pasien berdasar ID dan Objek
+    void tampilPasien() const {
         for (const auto& p : daftarPasien) {
             cout << "ID: " << p.second.getId() << ", Nama: " << p.second.getNama()
                 << ", Jenis Kelamin: " << (p.second.getJenisKelamin() == MALE ? "Laki-laki" : "Perempuan") << ", Diagnosis: " << p.second.getDiagnosis() << endl;
@@ -228,10 +228,10 @@ public:
         daftarDokter[id] = dokter;
     }
 
-    //Tampilkan dokter berdasarkan id dan polymorphism
+    //tampil dokter berdasarkan id dan polymorphism
     Dokter* cariDokter(int id) {
         if (daftarDokter.find(id) != daftarDokter.end()) {
-            daftarDokter[id].displayDetails();
+            daftarDokter[id].tampilDetail();
             return &daftarDokter[id];
         }
         else
@@ -240,7 +240,7 @@ public:
         }
     }
 
-    void tampilkanDokter() const {
+    void tampilDokter() const {
         for (const auto& d : daftarDokter) {
             cout << "ID: " << d.second.getId() << ", Nama: " << d.second.getNama() << ", Spesialisasi: " << d.second.getSpesialisasi() << endl;
         }
@@ -261,7 +261,7 @@ public:
     }
     Karyawan* cariKaryawan(int id) {
         if (daftarKaryawan.find(id) != daftarKaryawan.end()) {
-            daftarKaryawan[id].displayDetails();
+            daftarKaryawan[id].tampilDetail();
             return &daftarKaryawan[id];
         }
         else
@@ -269,7 +269,7 @@ public:
             return nullptr;
         }
     }
-    void tampilkanKaryawan() const {
+    void tampilKaryawan() const {
         for (const auto& k : daftarKaryawan) {
             cout << "ID: " << k.second.getId() << ", Nama: " << k.second.getNama() << ", Posisi: " << k.second.getPosisi() << endl;
         }
@@ -297,7 +297,7 @@ public:
             return nullptr;
         }
     }
-    void tampilkanRuangan() const {
+    void tampilRuangan() const {
         for (const auto& r : daftarRuangan) {
             cout << "Nomor: " << r.second.getNomor() << ", Jenis: " << r.second.getJenis()
                 << ", Tersedia: " << (r.second.isTersedia() ? "Ya" : "Tidak") << ", VIP: " << (r.second.isVIP() ? "Ya" : "Tidak") << endl;
@@ -334,15 +334,24 @@ public:
 
     //Update Janji Temu berdasarkan id
     void updateJanjiTemu(int id, const PendaftaranJanjiTemu& janjiTemu) {
-        for (auto& jt : daftarJanjiTemu) {
-            if (jt.getId() == id) {
-                cariRuangan(jt.getNomorRuangan())->setTersedia(true);
-                jt = janjiTemu;
-                cariRuangan(jt.getNomorRuangan())->setTersedia(false);
-                break;
+    for (auto& jt : daftarJanjiTemu) {
+        if (jt.getId() == id) {
+            // Cek update memenuhi kondisi untuk ruangan VIP dan metode pembayaran BPJS
+            Ruangan* ruangan = cariRuangan(janjiTemu.getNomorRuangan());
+            if (ruangan->isVIP() && janjiTemu.getMetodePembayaran() == BPJS) {
+                cout << "Maaf, ruangan VIP tidak dapat dibayar dengan BPJS." << endl;
+                return;
             }
+            
+            // Jika tidak ada masalah, lanjutkan pembaruan
+            cariRuangan(jt.getNomorRuangan())->setTersedia(true);
+            jt = janjiTemu;
+            cariRuangan(jt.getNomorRuangan())->setTersedia(false);
+            break;
         }
     }
+}
+
     PendaftaranJanjiTemu* cariJanjiTemu(int id) {
         for (auto& jt : daftarJanjiTemu) {
             if (jt.getId() == id) {
@@ -352,7 +361,7 @@ public:
         return nullptr;
     }
 
-    void tampilkanJanjiTemu() const {
+    void tampilJanjiTemu() const {
         for (const auto& jt : daftarJanjiTemu) {
             cout << "ID Janji Temu: " << jt.getId() << ", ID Pasien: " << jt.getIdPasien()
                 << ", ID Dokter: " << jt.getIdDokter() << ", Nomor Ruangan: " << jt.getNomorRuangan()
@@ -385,7 +394,7 @@ void menuManajemenPasien(ManajemenRumahSakit& mrs) {
         cout << "2. Hapus Pasien" << endl;
         cout << "3. Update Pasien" << endl;
         cout << "4. Cari Pasien" << endl;
-        cout << "5. Tampilkan Semua Pasien" << endl;
+        cout << "5. tampil Semua Pasien" << endl;
         cout << "6. Kembali ke Menu Utama" << endl;
         cout << "Masukkan pilihan: ";
         cin >> pilihan;
@@ -438,7 +447,7 @@ void menuManajemenPasien(ManajemenRumahSakit& mrs) {
                 }
                 break;
             case 5:
-                mrs.tampilkanPasien();
+                mrs.tampilPasien();
                 break;
             default:
                 cout << "Pilihan tidak valid." << endl;
@@ -455,7 +464,7 @@ void menuManajemenDokter(ManajemenRumahSakit& mrs) {
         cout << "2. Hapus Dokter" << endl;
         cout << "3. Update Dokter" << endl;
         cout << "4. Cari Dokter" << endl;
-        cout << "5. Tampilkan Semua Dokter" << endl;
+        cout << "5. tampil Semua Dokter" << endl;
         cout << "6. Kembali ke Menu Utama" << endl;
         cout << "Masukkan pilihan: ";
         cin >> pilihan;
@@ -500,7 +509,7 @@ void menuManajemenDokter(ManajemenRumahSakit& mrs) {
                 }
                 break;
             case 5:
-                mrs.tampilkanDokter();
+                mrs.tampilDokter();
                 break;
             default:
                 cout << "Pilihan tidak valid." << endl;
@@ -517,7 +526,7 @@ void menuManajemenKaryawan(ManajemenRumahSakit& mrs) {
         cout << "2. Hapus Karyawan" << endl;
         cout << "3. Update Karyawan" << endl;
         cout << "4. Cari Karyawan" << endl;
-        cout << "5. Tampilkan Semua Karyawan" << endl;
+        cout << "5. tampil Semua Karyawan" << endl;
         cout << "6. Kembali ke Menu Utama" << endl;
         cout << "Masukkan pilihan: ";
         cin >> pilihan;
@@ -562,7 +571,7 @@ void menuManajemenKaryawan(ManajemenRumahSakit& mrs) {
                 }
                 break;
             case 5:
-                mrs.tampilkanKaryawan();
+                mrs.tampilKaryawan();
                 break;
             default:
                 cout << "Pilihan tidak valid." << endl;
@@ -579,7 +588,7 @@ void menuManajemenRuangan(ManajemenRumahSakit& mrs) {
         cout << "2. Hapus Ruangan" << endl;
         cout << "3. Update Ruangan" << endl;
         cout << "4. Cari Ruangan" << endl;
-        cout << "5. Tampilkan Semua Ruangan" << endl;
+        cout << "5. tampil Semua Ruangan" << endl;
         cout << "6. Kembali ke Menu Utama" << endl;
         cout << "Masukkan pilihan: ";
         cin >> pilihan;
@@ -631,7 +640,7 @@ void menuManajemenRuangan(ManajemenRumahSakit& mrs) {
                 }
                 break;
             case 5:
-                mrs.tampilkanRuangan();
+                mrs.tampilRuangan();
                 break;
             default:
                 cout << "Pilihan tidak valid." << endl;
@@ -648,7 +657,7 @@ void menuManajemenJanjiTemu(ManajemenRumahSakit& mrs) {
         cout << "2. Hapus Janji Temu" << endl;
         cout << "3. Update Janji Temu" << endl;
         cout << "4. Cari Janji Temu" << endl;
-        cout << "5. Tampilkan Semua Janji Temu" << endl;
+        cout << "5. tampil Semua Janji Temu" << endl;
         cout << "6. Kembali ke Menu Utama" << endl;
         cout << "Masukkan pilihan: ";
         cin >> pilihan;
@@ -708,7 +717,7 @@ void menuManajemenJanjiTemu(ManajemenRumahSakit& mrs) {
                 }
                 break;
             case 5:
-                mrs.tampilkanJanjiTemu();
+                mrs.tampilJanjiTemu();
                 break;
             default:
                 cout << "Pilihan tidak valid." << endl;
